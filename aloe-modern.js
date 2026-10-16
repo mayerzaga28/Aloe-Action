@@ -1,5 +1,30 @@
 (()=>{
  const motion=matchMedia('(prefers-reduced-motion: reduce)');
+ const finePointer=matchMedia('(hover: hover) and (pointer: fine)');
+ const progress=document.createElement('div');progress.className='reading-progress';progress.setAttribute('aria-hidden','true');document.body.append(progress);
+ let scrollFrame=0;
+ const updateProgress=()=>{scrollFrame=0;const total=document.documentElement.scrollHeight-innerHeight;progress.style.transform='scaleX('+(total>0?Math.min(1,Math.max(0,scrollY/total)):0)+')';};
+ addEventListener('scroll',()=>{if(!scrollFrame)scrollFrame=requestAnimationFrame(updateProgress);},{passive:true});addEventListener('resize',updateProgress);updateProgress();
+ document.querySelectorAll('.choice-card,.life-grid article').forEach(card=>{
+  card.classList.add('interactive-surface');
+  card.addEventListener('pointermove',event=>{
+   if(motion.matches||!finePointer.matches)return;
+   const r=card.getBoundingClientRect(),x=(event.clientX-r.left)/r.width,y=(event.clientY-r.top)/r.height;
+   card.style.setProperty('--tilt-x',((.5-y)*5)+'deg');card.style.setProperty('--tilt-y',((x-.5)*5)+'deg');card.style.setProperty('--spot-x',(x*100)+'%');card.style.setProperty('--spot-y',(y*100)+'%');
+  });
+  card.addEventListener('pointerleave',()=>{card.style.setProperty('--tilt-x','0deg');card.style.setProperty('--tilt-y','0deg');});
+ });
+ document.addEventListener('click',event=>{
+  const button=event.target.closest('.btn,.formula-options button,.locator-toolbar button');
+  if(!button||motion.matches)return;
+  const ripple=document.createElement('span'),r=button.getBoundingClientRect();ripple.className='tap-wave';ripple.setAttribute('aria-hidden','true');ripple.style.left=(event.detail?event.clientX-r.left:r.width/2)+'px';ripple.style.top=(event.detail?event.clientY-r.top:r.height/2)+'px';button.append(ripple);ripple.addEventListener('animationend',()=>ripple.remove(),{once:true});
+ });
+ document.querySelectorAll('details').forEach(details=>details.addEventListener('toggle',()=>{
+  if(details.open&&!motion.matches)Array.from(details.children).filter(el=>el.tagName!=='SUMMARY').forEach(el=>el.animate([{opacity:0,transform:'translateY(-6px)'},{opacity:1,transform:'translateY(0)'}],{duration:260,easing:'ease-out'}));
+ }));
+ document.querySelectorAll('[data-ingredient]').forEach(button=>button.addEventListener('click',()=>{
+  if(!motion.matches)document.querySelector('.ingredient-focus')?.animate([{opacity:.2,transform:'translateY(12px)'},{opacity:1,transform:'translateY(0)'}],{duration:360,easing:'ease-out'});
+ }));
  const nodes=[...document.querySelectorAll('.section-head,.choice-card,.sensory-pair figure,.life-grid article,.story-split>div,.home-faq>div')];
  if('IntersectionObserver' in window&&!motion.matches){
   const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target);}}),{threshold:.08});
