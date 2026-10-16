@@ -1,7 +1,7 @@
 (()=>{
 const stage=document.querySelector('.store-stage');if(!stage)return;
 const motion=matchMedia('(prefers-reduced-motion: reduce)'),fine=matchMedia('(pointer:fine)'),image=document.querySelector('#stage-image');
-const products={80:{src:'/aloe-action-80.png',price:'300',format:'Formato compacto',caption:'Representación digital · 80 ml'},250:{src:'/aloe-action-250.jpeg',price:'850',format:'Formato grande',caption:'Presentación de 250 ml'}};
+const products={80:{src:'/aloe-action-80.png',price:'300',format:'Formato compacto',caption:'Representación digital · 80 ml'},250:{src:'/aloe-action-250-cutout.png',price:'850',format:'Formato grande',caption:'Presentación de 250 ml'}};
 const preload=new Image();preload.src=products[250].src;
 let entrance;
 document.querySelectorAll('[data-stage-size]').forEach(button=>button.addEventListener('click',()=>{
