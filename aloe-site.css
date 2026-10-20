@@ -96,3 +96,20 @@ body[data-page=tienda] .nav{border-color:#d7dbce}
 @media(max-width:1000px){.store-stage,.store-stage[data-size="250"]{gap:0 35px;padding:45px 30px;min-height:650px;height:auto}.stage-copy h1{font-size:46px!important}.stage-art,.stage-bottle,.store-stage[data-size="250"] .stage-bottle{min-height:530px}.stage-bottle img,.store-stage[data-size="250"] .stage-bottle img{height:480px}.stage-control{max-width:100%}}
 @media(max-width:650px){.store-stage,.store-stage[data-size="250"]{grid-template-columns:1fr;padding:28px 24px 38px;gap:24px;min-height:0;height:auto}.stage-copy{grid-row:1}.stage-copy h1{font-size:39px!important;max-width:340px}.stage-copy p{font-size:12px;margin-top:18px}.stage-art{grid-column:1;grid-row:2;min-height:350px;height:350px;border-radius:160px 160px 10px 10px}.stage-bottle,.store-stage[data-size="250"] .stage-bottle{min-height:350px;height:350px}.stage-bottle img,.store-stage[data-size="250"] .stage-bottle img{height:350px;max-height:none;padding:12px}.stage-control{grid-row:3;margin:0;width:100%}.stage-switch{margin:0 auto 20px;width:100%;max-width:250px}.stage-offer{padding-top:18px}.stage-offer .btn{padding:14px}.stage-copy>.eyebrow{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.stage-bottle,.store-stage[data-size="250"] .stage-bottle{transform:none!important}.stage-art{transition:none}}
+
+.product-journey{position:relative;display:grid;grid-template-columns:minmax(280px,.9fr) minmax(0,1.1fr);background:#e9ecdf;padding:0 max(30px,calc((100vw - 1280px)/2));gap:65px}
+.journey-visual{position:sticky;top:125px;height:calc(100svh - 155px);max-height:760px;min-height:450px;align-self:start;overflow:hidden;isolation:isolate;pointer-events:none}
+.journey-backdrop{position:absolute;inset:8% 0;background:#d8e0cb;border-radius:45% 45% 15% 15%;transform:rotate(var(--journey-bg,0deg));transition:background .4s}
+.journey-bottle{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:35px 45px;filter:drop-shadow(12px 20px 18px #20382d26)}
+.journey-large{transform:translateY(var(--journey-y,0px)) rotate(var(--journey-r,-8deg)) scale(var(--journey-scale,1));opacity:var(--journey-large,1)}
+.journey-small{transform:translateY(var(--journey-y,0px)) rotate(var(--journey-r,0deg)) scale(.92);opacity:var(--journey-small,0)}
+.journey-track{position:absolute;bottom:18px;left:20%;right:20%;height:2px;background:#8f9d7a55}
+.journey-track span{display:block;height:100%;background:#405c38;transform-origin:left;transform:scaleX(var(--journey-progress,0))}
+.journey-content{min-width:0}.journey-content .product-story{background:none;padding-block:90px 70px}.journey-content .wrap{width:100%}
+.journey-content .story-split{display:block}.journey-content .formula-explorer{margin-top:40px}
+.journey-content .home-community{padding-block:75px 100px}.journey-content .section-head{display:block}.journey-content .section-head p{margin-top:25px}
+.journey-content .life-grid{grid-template-columns:1fr;gap:16px}.journey-content .life-grid article{min-height:0;padding:26px}.journey-content .life-grid h3{margin-top:12px}.journey-content .life-grid p{max-width:none}
+.journey-content .section-head h2,.journey-content .product-story h2{font-size:clamp(37px,3.8vw,56px)}
+.journey-content .reveal-ready{opacity:1;transform:none}
+@media(max-width:800px){.product-journey{display:block;padding:0 24px}.journey-visual{top:72px;height:230px;min-height:0;max-height:none;z-index:4;background:#e9ecdf;margin:0 -24px;border-bottom:1px solid #c3ceb5}.journey-backdrop{inset:10px 25%;border-radius:100px}.journey-bottle{padding:12px;height:215px}.journey-track{bottom:8px;left:30%;right:30%}.journey-content .product-story{padding-top:40px}.journey-content .home-community{padding-top:35px}.journey-content .formula-options button{padding:10px 12px}.journey-content :is(button,a,summary){scroll-margin-top:320px}}
+@media(prefers-reduced-motion:reduce){.journey-visual{position:relative;top:0}.journey-bottle{transform:none!important}.journey-large{opacity:1!important}.journey-small{opacity:0!important}.journey-backdrop{transform:none;transition:none}.journey-track{display:none}}
