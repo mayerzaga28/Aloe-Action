@@ -1,6 +1,20 @@
 (()=>{
  const motion=matchMedia('(prefers-reduced-motion: reduce)');
  const finePointer=matchMedia('(hover: hover) and (pointer: fine)');
+ const activeAnimations=new Set();
+ const animate=(element,frames,options)=>{
+  if(!element||motion.matches)return;
+  const animation=element.animate(frames,options);activeAnimations.add(animation);
+  animation.finished.catch(()=>{}).finally(()=>activeAnimations.delete(animation));
+ };
+ motion.addEventListener('change',()=>{if(motion.matches){activeAnimations.forEach(a=>a.cancel());activeAnimations.clear();}});
+ // Animate native dialogs without delaying focus or changing close behavior.
+ const dialogObserver=new MutationObserver(records=>records.forEach(record=>{
+  const dialog=record.target;if(dialog.open)animate(dialog,[{opacity:0,transform:'translateY(22px) scale(.98)'},{opacity:1,transform:'translateY(0) scale(1)'}],{duration:300,easing:'cubic-bezier(.2,.8,.2,1)'});
+ }));
+ document.querySelectorAll('dialog').forEach(dialog=>dialogObserver.observe(dialog,{attributes:true,attributeFilter:['open']}));
+ const badge=document.querySelector('#cart-count');
+ if(badge)new MutationObserver(()=>animate(badge,[{transform:'scale(1)'},{transform:'scale(1.35)'},{transform:'scale(1)'}],{duration:350,easing:'ease-out'})).observe(badge,{childList:true,characterData:true,subtree:true});
  const progress=document.createElement('div');progress.className='reading-progress';progress.setAttribute('aria-hidden','true');document.body.append(progress);
  let scrollFrame=0;
  const updateProgress=()=>{scrollFrame=0;const total=document.documentElement.scrollHeight-innerHeight;progress.style.transform='scaleX('+(total>0?Math.min(1,Math.max(0,scrollY/total)):0)+')';};
@@ -29,6 +43,8 @@
  if('IntersectionObserver' in window&&!motion.matches){
   const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target);}}),{threshold:.08});
   nodes.forEach(node=>{if(node.getBoundingClientRect().top>innerHeight){node.classList.add('reveal-ready');observer.observe(node);}});
+  document.querySelectorAll('.choice-options,.life-grid,.sensory-pair').forEach(group=>Array.from(group.children).forEach((node,index)=>{if(node.classList.contains('reveal-ready'))node.style.transitionDelay=Math.min(index*90,180)+'ms';}));
+  document.addEventListener('focusin',event=>event.target.closest('.reveal-ready')?.classList.add('is-visible'));
   motion.addEventListener('change',()=>{if(motion.matches){observer.disconnect();nodes.forEach(n=>n.classList.add('is-visible'));}});
  }
  const ribbon=document.querySelector('.motion-ribbon'),pause=document.querySelector('#ribbon-pause');
