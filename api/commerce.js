@@ -3,7 +3,7 @@ import {catalog,quote,reserve,enqueue,settle} from '../server/commerce.js';
 import {checkout,reconcile,stripe} from '../server/payments.js';
 import {admin,authRequest,originCheck,rateLimit,secureEqual} from '../server/security.js';
 import {dashboard,mutate} from '../server/admin.js';
-import {deliverMail} from '../server/mail.js';
+import {deliverMail,inspectDelivery} from '../server/mail.js';
 import {fail,email,text,uuid,hash,token,randomUUID} from '../server/validation.js';
 export const config={api:{bodyParser:false}};
 async function rawBody(req){const chunks=[];let length=0;for await(const chunk of req){length+=chunk.length;if(length>64000)fail('Solicitud demasiado grande.',413);chunks.push(chunk);}return Buffer.concat(chunks);}
@@ -12,6 +12,7 @@ export default async function handler(req,res){
  const send=(data,status=200)=>{res.statusCode=status;res.setHeader('Content-Type','application/json');res.end(JSON.stringify(data));};
  try{
   const action=new URL(req.url,'https://local.invalid').searchParams.get('action')||'health';
+  if(!['health','webhook','jobs','catalog','quote','checkout','order','cancel','contact','login','session','logout','admin','admin-update','admin-jobs'].includes(action))fail('Ruta no encontrada.',404);
   if(action==='health'){return send({salesEnabled:process.env.SALES_ENABLED==='true',configured:!!process.env.DATABASE_URL,mode:process.env.PAYMENT_MODE||'test'});}
   const db=database();
   if(action==='webhook'){
@@ -71,4 +72,4 @@ export default async function handler(req,res){
   fail('Ruta no encontrada.',404);
  }catch(e){const status=e.status||500;if(status===500)console.error(JSON.stringify({requestId,error:'commerce_failure',code:e.code||e.type||'internal'}));send({error:status===500?'No pudimos completar la operación. No vuelvas a pagar hasta consultar tu pedido.':e.message,requestId},status);}
 }
-async function jobs(db){const orders=(await db.query("SELECT * FROM shop.orders WHERE stock_state='reserved' AND created_at>now()-interval '20 hours' ORDER BY created_at LIMIT 20")).rows;let checked=0;for(const o of orders){try{await reconcile(db,o);checked++;}catch{console.error(JSON.stringify({error:'reconciliation_pending',order:o.id}));}}await db.query('DELETE FROM shop.rate_limits WHERE expires_at<now()');return {checked,mail:await deliverMail(db)};}
+async function jobs(db){const orders=(await db.query("SELECT * FROM shop.orders WHERE stock_state='reserved' AND (session_id IS NOT NULL OR created_at>now()-interval '20 hours') ORDER BY updated_at LIMIT 5")).rows;let checked=0;for(const o of orders){try{await reconcile(db,o);checked++;}catch{console.error(JSON.stringify({error:'reconciliation_pending',order:o.id}));}}await db.query('DELETE FROM shop.rate_limits WHERE expires_at<now()');await inspectDelivery(db);return {checked,mail:await deliverMail(db)};}

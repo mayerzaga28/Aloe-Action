@@ -44,9 +44,12 @@ export async function settle(db,id,session,eventId){
   if(session.payment_status==='paid')payment='paid';
   else if(session.status==='expired')payment=o.payment==='cancelled'?'cancelled':'expired';
   else if(session.status==='complete')payment='pending';
+  const intent=typeof session.payment_intent==='object'?session.payment_intent:null;
+  if(intent?.status==='requires_payment_method'&&session.payment_status!=='paid')payment='failed';
+  if(intent?.status==='canceled'&&session.payment_status!=='paid')payment='cancelled';
   if(['refunded','partially_refunded'].includes(o.payment))payment=o.payment;
   if(o.stock_state==='sold'&&payment!=='paid'&&!['refunded','partially_refunded'].includes(payment))return o;
-  const paid=payment==='paid',release=session.status==='expired'&&session.payment_status!=='paid';
+  const paid=payment==='paid',release=(session.status==='expired'||intent?.status==='canceled')&&session.payment_status!=='paid';
   if(paid&&o.stock_state==='released'){return (await c.query("UPDATE shop.orders SET payment='review',updated_at=now() WHERE id=$1 RETURNING *",[id])).rows[0];}
   if(o.stock_state==='reserved'&&(paid||release)){
    for(const line of [...o.items].sort((a,b)=>a.id.localeCompare(b.id))){await c.query('UPDATE shop.variants SET reserved=reserved-$2,physical=physical-$3 WHERE id=$1',[line.id,line.quantity,paid?line.quantity:0]);await movement(c,line.id,id,paid?-line.quantity:0,-line.quantity,paid?'Venta confirmada':'Reserva vencida confirmada por Stripe','stripe');}
@@ -54,6 +57,8 @@ export async function settle(db,id,session,eventId){
   }
   await c.query('UPDATE shop.orders SET payment=$2,payment_intent=$3,updated_at=now() WHERE id=$1',[id,payment,typeof session.payment_intent==='string'?session.payment_intent:session.payment_intent?.id||null]);
   if(paid){const link=process.env.APP_ORIGIN+'/pedido#'+id+'.'+token(id);await enqueue(c,id+':paid:customer',o.customer.email,'ALOE ACTION · Pago confirmado',`Tu pedido ${id} está pagado. Total: $${(o.total/100).toFixed(2)} MXN. Consulta su estado: ${link}`);await enqueue(c,id+':paid:team',process.env.TEAM_EMAIL,'Nuevo pedido pagado · ALOE ACTION',`Pedido ${id}. Consúltalo en el panel privado.`);}
+  const charge=intent?.latest_charge;
+  if(charge&&typeof charge==='object'&&charge.currency==='mxn'&&charge.amount===o.total&&charge.livemode===(o.mode==='live')&&charge.amount_refunded>0)await c.query("UPDATE shop.orders SET payment=$2 WHERE id=$1 AND stock_state='sold'",[id,charge.amount_refunded===o.total?'refunded':'partially_refunded']);
   return (await c.query('SELECT * FROM shop.orders WHERE id=$1',[id])).rows[0];
  });
 }

@@ -14,4 +14,4 @@ export async function checkout(db,o,provider=stripe()){
  await db.query('UPDATE shop.orders SET session_id=$2 WHERE id=$1 AND session_id IS NULL',[o.id,session.id]);
  return {url:session.url,id:o.id,token:token(o.id)};
 }
-export async function reconcile(db,o,provider=stripe(),eventId){if(!o.session_id){await checkout(db,o,provider);o=(await db.query('SELECT * FROM shop.orders WHERE id=$1',[o.id])).rows[0];}const session=await provider.checkout.sessions.retrieve(o.session_id);return settle(db,o.id,session,eventId);}
+export async function reconcile(db,o,provider=stripe(),eventId){if(!o.session_id){await checkout(db,o,provider);o=(await db.query('SELECT * FROM shop.orders WHERE id=$1',[o.id])).rows[0];}const session=await provider.checkout.sessions.retrieve(o.session_id,{expand:['payment_intent.latest_charge']});return settle(db,o.id,session,eventId);}

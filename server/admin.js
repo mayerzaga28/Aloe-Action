@@ -7,7 +7,7 @@ export async function dashboard(db,a,input){
  const orders=(await db.query(`SELECT * FROM shop.orders WHERE ($1='' OR id::text ILIKE '%'||$1||'%' OR customer->>'email' ILIKE '%'||$1||'%') AND ($2='' OR payment=$2) ORDER BY created_at DESC LIMIT 100`,[filter,input.payment||''])).rows;
  const variants=(await db.query('SELECT v.*,p.name,p.description,p.active AS product_active FROM shop.variants v JOIN shop.products p ON p.id=v.product_id ORDER BY v.ml')).rows;
  const movements=(await db.query('SELECT * FROM shop.movements ORDER BY created_at DESC LIMIT 100')).rows;
- const outbox=(await db.query('SELECT id,state,attempts,last_error,provider_id,created_at FROM shop.outbox ORDER BY created_at DESC LIMIT 100')).rows;
+ const outbox=(await db.query('SELECT id,state,delivery_status,attempts,last_error,provider_id,created_at FROM shop.outbox ORDER BY created_at DESC LIMIT 100')).rows;
  const contacts=(await db.query('SELECT * FROM shop.contacts ORDER BY created_at DESC LIMIT 100')).rows;
  return {role:a.role,orders,variants,movements,outbox,contacts};
 }

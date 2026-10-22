@@ -13,3 +13,8 @@ export async function deliverMail(db){
  }
  return {configured:true,accepted:sent};
 }
+export async function inspectDelivery(db){
+ if(!process.env.RESEND_API_KEY)return;
+ const mails=(await db.query("SELECT id,provider_id FROM shop.outbox WHERE state='sent' AND provider_id IS NOT NULL AND created_at>now()-interval '7 days' AND (delivery_status IS NULL OR delivery_status IN ('sent','delivery_delayed')) AND (delivery_checked_at IS NULL OR delivery_checked_at<now()-interval '30 minutes') ORDER BY delivery_checked_at NULLS FIRST LIMIT 5")).rows;
+ for(const m of mails){try{const r=await fetch('https://api.resend.com/emails/'+encodeURIComponent(m.provider_id),{headers:{Authorization:'Bearer '+process.env.RESEND_API_KEY},signal:AbortSignal.timeout(8000)});if(!r.ok)continue;const email=await r.json();if(email.id!==m.provider_id)continue;await db.query('UPDATE shop.outbox SET delivery_status=$2,delivery_checked_at=now() WHERE id=$1',[m.id,String(email.last_event||'unknown').slice(0,40)]);}catch{/* Leave pending for the next scheduled inspection. */}}
+}

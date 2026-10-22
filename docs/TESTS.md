@@ -2,7 +2,7 @@
 
 ## Ejecutado localmente
 
-`npm test`: 23/23 pruebas aprobadas sobre PGlite (motor PostgreSQL local). Se aplicó la migración 001 a una base efímera. Las pruebas consultan filas de pedidos, inventario, movimientos y outbox, no solo mensajes de pantalla. Datos ficticios quedan únicamente en la base efímera de tests. `npm run build`, `git diff --check` y comprobación sintáctica JS aprobados. Instalación: 0 vulnerabilidades reportadas por npm al instalar.
+`npm test`: 30/30 pruebas aprobadas sobre PGlite (motor PostgreSQL local). Se aplicaron las migraciones 001, 002 y 003 a una base efímera. Las pruebas consultan filas de pedidos, inventario, movimientos y outbox, no solo mensajes de pantalla. Datos ficticios quedan únicamente en la base efímera de tests. Se verificó que el rol runtime no puede crear administradores ni aprobar políticas. `npm run build`, `git diff --check` y comprobación sintáctica JS aprobados. Instalación: 0 vulnerabilidades reportadas por npm al instalar.
 
 Cubierto: catálogo inactivo/stock cero inicial, subtotal/envío calculado en servidor, CP sin tarifa bloqueado, cantidades inválidas y líneas duplicadas, datos incompletos, hash de cotización alterado, producto inactivo/agotado, idempotencia de reserva y cliente cambiado, dos intentos por última unidad, pago confirmado y webhooks duplicados, pago pendiente que pasa a pagado, expiración sin doble liberación, sesión/monto/moneda/modo/pedido incorrectos, eventos fuera de orden que no degradan venta, reembolso sin reposición automática, ajuste contra stock reservado, devolución física auditada, rol operations limitado, token de otro pedido rechazado, rutas de imagen seguras, recuperación idempotente de respuesta perdida de creación de checkout.
 
@@ -25,9 +25,11 @@ Cubierto: catálogo inactivo/stock cero inicial, subtotal/envío calculado en se
 | Correos recibidos / recuperación de acceso | Pendiente de dominio, proveedor y buzones |
 | Contacto guardado, envío y guía end-to-end | Implementado, prueba conectada pendiente |
 | Restauración de backup | Procedimiento escrito; ejercicio real pendiente |
-| Plan comercial Vercel / alertas de gasto | Acceso al equipo denegado (403); pendiente |
+| Plan comercial Vercel / alertas de gasto | Hobby verificado en panel web; autorización Pro y alertas pendientes |
 
 No se han utilizado tarjetas reales ni cobrado dinero. El estado de lanzamiento permanece BLOQUEADO. La vista previa sin variables devuelve catálogo no conectado, no crea pedidos ni permite pagos; eso es un cierre seguro, no un checkout funcional validado.
+
+Verificación visual del preview en navegador: `/comprar` presenta formulario y resumen, pago deshabilitado y aviso de configuración pendiente. A 390 × 844 px, ancho de documento 390 px (sin desbordamiento horizontal). `/admin` solo presenta acceso y aviso de conexión pendiente; no muestra datos privados. La capa Vercel Authentication está activa; el navegador del propietario accede con su sesión, HTTP anónimo recibe protección. No se desactivó. La prueba end-to-end se detuvo en el límite API → DB, porque no hay credenciales ni proyecto de base de datos conectado.
 
 ## Secuencia de prueba conectada
 

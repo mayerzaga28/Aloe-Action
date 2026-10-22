@@ -2,7 +2,7 @@
   "cleanUrls": true,
   "buildCommand": "npm run build",
   "outputDirectory": "public",
-  "functions": {"api/commerce.js":{"maxDuration":60}},
+  "functions": {"api/commerce.js":{"maxDuration":300}},
   "headers": [
     {"source":"/(.*)","headers":[{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"Referrer-Policy","value":"no-referrer"},{"key":"X-Frame-Options","value":"DENY"}]},
     {"source":"/admin","headers":[{"key":"Cache-Control","value":"no-store"},{"key":"X-Robots-Tag","value":"noindex, nofollow"}]},
